@@ -64,3 +64,18 @@ def test_ifc_data_qa_frontend_uses_shared_session_module_and_ifc_filtering():
     assert "getActiveSessionId" in shared_js
     assert "ifc-toolkit-session-changed" in shared_js
     assert "legacyStorageKeys" in shared_js
+
+
+def test_ifc_data_qa_frontend_bootstraps_session_file_loader_and_refresh_uses_same_loader():
+    root = Path(__file__).resolve().parent.parent
+    qa_js = (root / "static" / "ifc_qa_app.js").read_text(encoding="utf-8")
+
+    assert "function bootstrapSessionFileLoader" in qa_js
+    assert "qaState.sessionLoaderBootstrapped = true;" in qa_js
+    assert "void loadSessionFilesNow(sid, reason);" in qa_js
+    assert "bootstrapSessionFileLoader(normalized, \"session_subscribe\")" in qa_js
+    assert "bootstrapSessionFileLoader(normalized, \"toolkit_event\")" in qa_js
+    assert "bootstrapSessionFileLoader(qaState.canonicalSessionId || qaState.sessionId, \"ensureSession_resolved\")" in qa_js
+    assert "bootstrapSessionFileLoader(qaState.canonicalSessionId || qaState.sessionId, \"mount_immediate\")" in qa_js
+    assert "qaRefreshSessionFilesBtn" in qa_js
+    assert "loadSessionFilesNow(qaState.canonicalSessionId || qaState.sessionId, \"manual_refresh\")" in qa_js

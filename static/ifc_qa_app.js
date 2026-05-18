@@ -60,6 +60,7 @@ const qaState = {
   isFetchingSessionFiles: false,
   lastSessionFilesFetchSessionId: "",
   sessionLoaderExecuted: false,
+  sessionLoaderBootstrapped: false,
   bootPage: "",
 };
 let lastFetchedSessionId = null;
@@ -434,9 +435,11 @@ function renderSessionSummary() {
 function renderActionButtons() {
   const startBtn = qs("#qaStartBtn");
   const dlBtn = qs("#qaDownloadBtn");
+  const selectAllBtn = qs("#qaSelectAllBtn");
   const hasSessionFiles = (qaState.sessionIfcFiles || []).length > 0;
   const hasSelectedFiles = (qaState.selectedSessionFiles || []).length > 0;
   if (startBtn) startBtn.disabled = qaState.isRunning || qaState.isStartingRun || !qaState.configLoaded || (!hasSessionFiles && !hasSelectedFiles);
+  if (selectAllBtn) selectAllBtn.disabled = !hasSessionFiles || qaState.isFetchingSessionFiles;
   if (dlBtn) dlBtn.disabled = qaState.isRunning || !qaState.hasZip;
 }
 
@@ -841,24 +844,6 @@ function maybeFetchSessionFiles({ force = false, reason = "unspecified" } = {}) 
   debugLog("IFC QA session file fetch trigger", { sid, force, reason });
 
   return loadSessionFilesNow(sid);
-}
-
-function startMountSessionFetchRetry() {
-  const timer = window.setInterval(() => {
-    const sid =
-      qaState.canonicalSessionId ||
-      qaState.sessionId ||
-      window.IFC_SESSION_ID ||
-      localStorage.getItem("ifcToolkitSessionId") ||
-      localStorage.getItem("sessionId");
-
-    if (sid) {
-      window.clearInterval(timer);
-      loadSessionFilesNow(sid, "retry_loop");
-      return;
-    }
-  }, 250);
-  return () => window.clearInterval(timer);
 }
 
 async function loadSessionFilesNow(sessionIdFromCaller = "", reason = "direct") {
@@ -1369,11 +1354,18 @@ function bindExtractor() {
     a.href = `/api/ifc-qa/result/${qaState.sessionId}`;
     a.click();
   });
-  window.setTimeout(() => {
-    console.info("[ifc-qa] bindExtractor delayed loader call");
-    void loadSessionFilesNow("", "bindExtractor_delayed");
-  }, 0);
   renderActionButtons();
+}
+
+function bootstrapSessionFileLoader(sessionIdHint = "", reason = "boot") {
+  if (qaState.sessionLoaderBootstrapped) return;
+  const sid = String(sessionIdHint || qaState.canonicalSessionId || qaState.sessionId || "").trim();
+  if (!sid) return;
+  qaState.sessionLoaderBootstrapped = true;
+  qaState.sessionLoaderExecuted = true;
+  renderSessionLoaderExecutedState();
+  renderDebugState();
+  void loadSessionFilesNow(sid, reason);
 }
 
 function configTemplate() {
@@ -1432,7 +1424,7 @@ async function init() {
       renderSessionState();
       updateGlobalSessionBadge();
       if (qaState.sessionReady) {
-        void loadSessionFilesNow(normalized, "session_subscribe");
+        bootstrapSessionFileLoader(normalized, "session_subscribe");
       }
       renderDebugState();
     });
@@ -1448,7 +1440,7 @@ async function init() {
       renderSessionState();
       updateGlobalSessionBadge();
       if (qaState.sessionReady) {
-        void loadSessionFilesNow(normalized, "toolkit_event");
+        bootstrapSessionFileLoader(normalized, "toolkit_event");
       }
       renderDebugState();
       console.info("IFC QA session changed event handled", { sessionId: normalized, eventName });
@@ -1463,7 +1455,7 @@ async function init() {
     ensureSession()
       .then(async () => {
         await refreshSessionSummary();
-        await loadSessionFilesNow(qaState.canonicalSessionId || qaState.sessionId, "ensureSession_resolved");
+        bootstrapSessionFileLoader(qaState.canonicalSessionId || qaState.sessionId, "ensureSession_resolved");
       })
       .catch((err) => {
         console.error("IFC QA session bootstrap failed", err);
@@ -1475,10 +1467,7 @@ async function init() {
         renderActionButtons();
         renderDebugState();
       });
-    const stopMountSessionFetchRetry = startMountSessionFetchRetry();
-    window.addEventListener("beforeunload", () => {
-      if (typeof stopMountSessionFetchRetry === "function") stopMountSessionFetchRetry();
-    }, { once: true });
+    bootstrapSessionFileLoader(qaState.canonicalSessionId || qaState.sessionId, "mount_immediate");
     await loadQaConfig();
     renderActionButtons();
   } else if (page === "config") {
