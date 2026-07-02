@@ -32,7 +32,7 @@ jobs:
 
       - name: Push image
         run: |
-          docker push ghcr.io/colinbed/IFC_Apps:latest
+          docker push ghcr.io/colinbed/ifctoolkits:latest
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
