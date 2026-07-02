@@ -22,3 +22,11 @@ spec:
               value: "https://ifctoolkit.com"
             - name: FILE_RETENTION_MINUTES
               value: "30"
+    spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: ifctoolkit
+          image: ghcr.io/colinbed/ifctoolkit:latest
