@@ -13,7 +13,8 @@
         <img src="/static/brand/ifctoolkit-logo-horizontal.png" alt="ifctoolkit" />
         <span>Practical tools, better compliance.</span>
       </a>
-      <nav class="public-nav" aria-label="Public navigation">
+      <button class="public-menu-toggle" type="button" aria-controls="public-nav" aria-expanded="false">Menu</button>
+      <nav class="public-nav" id="public-nav" aria-label="Public navigation">
         <a class="{% if page.active=='home' %}active{% endif %}" href="/">Home</a>
         <a class="{% if page.active=='about' %}active{% endif %}" href="/about">About</a>
         <a class="{% if page.active=='tools' %}active{% endif %}" href="/tools">Tools</a>
@@ -21,7 +22,7 @@
         <a class="{% if page.active=='compliance' %}active{% endif %}" href="/compliance">Compliance</a>
         <a class="{% if page.active=='pricing' %}active{% endif %}" href="/pricing">Pricing</a>
         <a class="{% if page.active=='contact' %}active{% endif %}" href="/contact">Contact</a>
-        <a class="public-button small" href="/upload">Upload</a>
+        <a class="public-button small" href="/tools">Get Started</a>
       </nav>
     </header>
     <main class="public-main">
@@ -34,5 +35,22 @@
       <div><h3>Company</h3><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/contact">Contact</a></div>
       <div><h3>Legal</h3><a href="#">Privacy Policy</a><a href="#">Terms of Service</a><h3>Social</h3><a href="#">LinkedIn</a></div>
     </footer>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var toggle = document.querySelector(".public-menu-toggle");
+        var nav = document.getElementById("public-nav");
+        if (!toggle || !nav) return;
+        toggle.addEventListener("click", function () {
+          var isOpen = nav.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        });
+        nav.querySelectorAll("a").forEach(function (link) {
+          link.addEventListener("click", function () {
+            nav.classList.remove("is-open");
+            toggle.setAttribute("aria-expanded", "false");
+          });
+        });
+      });
+    </script>
   </body>
 </html>
