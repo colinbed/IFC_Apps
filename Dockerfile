@@ -1,13 +1,20 @@
-FROM node:20-alpine
+FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-RUN npm run build
 
-EXPOSE 3000
+EXPOSE 8000
 
-CMD ["npm", "start"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
