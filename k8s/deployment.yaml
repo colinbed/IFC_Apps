@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
         - name: ifctoolkit
-          image: ghcr.io/YOUR_GITHUB_USERNAME/ifctoolkit:latest
+          image: ghcr.io/colinbed/ifctoolkit:latest
           ports:
-            - containerPort: 3000
+            - containerPort: 8000
           env:
             - name: APP_URL
               value: "https://ifctoolkit.com"
