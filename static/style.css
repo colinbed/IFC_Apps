@@ -1922,3 +1922,30 @@ body.public-site {
   .site-header-inner { flex-wrap: nowrap; }
   .site-nav { order: initial; width: auto; flex-basis: auto; flex-wrap: nowrap; }
 }
+
+/* Keep the public header compact even when the navigation wraps or the mobile menu is open. */
+.public-header {
+  min-height: 76px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .public-header {
+    position: sticky;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .public-nav {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: clamp(20px, 5vw, 72px);
+    width: min(280px, calc(100vw - 40px));
+    padding: 10px;
+    background: rgba(255,255,255,.98);
+    border: 1px solid #DDE6F5;
+    border-radius: 22px;
+    box-shadow: 0 24px 70px rgba(11,19,43,.14);
+  }
+}
