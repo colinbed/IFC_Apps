@@ -1,6 +1,5 @@
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: ifctoolkit
 
@@ -24,6 +23,7 @@ spec:
         - name: ifctoolkit
           image: ghcr.io/colinbed/ifctoolkit:latest
           imagePullPolicy: Always
+
           ports:
             - containerPort: 8000
 
@@ -33,3 +33,25 @@ spec:
 
             - name: FILE_RETENTION_MINUTES
               value: "30"
+
+            - name: TMPDIR
+              value: "/tmp"
+
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+              ephemeral-storage: "4Gi"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+              ephemeral-storage: "12Gi"
+
+          volumeMounts:
+            - name: temporary-processing
+              mountPath: /tmp
+
+      volumes:
+        - name: temporary-processing
+          emptyDir:
+            sizeLimit: "10Gi"
